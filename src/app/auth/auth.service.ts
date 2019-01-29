@@ -1,23 +1,53 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
+import * as fireB from 'firebase';
+
+import { Store } from '@ngrx/store';
+import { AppState } from '../app.reducer';
+import { BeginLoadingAction, EndLoadingAction } from '../shared/ui.actions';
 
 import { Router } from '@angular/router';
-import * as fireB from 'firebase';
 import Swal from 'sweetalert2';
 import { map } from 'rxjs/operators';
 import { User } from './user.model';
+import { SetUserAction } from './auth.actions';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
 
-  constructor(private afAuth: AngularFireAuth, private router: Router, private afDB: AngularFirestore ) { }
+export class AuthService implements OnDestroy {
 
+  private userSubs =  new  Subscription();
+
+  constructor(private afAuth: AngularFireAuth,
+              private router: Router,
+              private afDB: AngularFirestore,
+              private store: Store<AppState>) {
+
+  }
+
+  initAuthListener () {
+    this.userSubs = this.afAuth.authState.subscribe( ( fbUser: fireB.User ) => {
+      if (fbUser) {
+        this.afDB.doc(`${ fbUser.uid }/usuario`).valueChanges().subscribe(
+          (data: any) => {
+            const newUser = new User (data);
+            this.store.dispatch( new SetUserAction( newUser ) );
+            console.log(newUser);
+          }
+        );
+
+      }
+    });
+  }
 
  createUser (nombre: string, email: string, password: string) {
+
+  this.store.dispatch( new BeginLoadingAction() );
 
   this.afAuth.auth
     .createUserWithEmailAndPassword(email, password)
@@ -27,25 +57,27 @@ export class AuthService {
           nombre: nombre,
           email: email
         };
-        this.afDB.doc(`${ user.uid }/usuario` )
-        .set(user)
+          this.afDB.doc(`${ user.uid }/usuario` )
+          .set(user)
             .then( () => {
-          this.router.navigate(['/']);
+              this.store.dispatch( new EndLoadingAction() );
+              this.router.navigate(['/']);
         });
 
         console.log(r);
       })
       .catch(e => {
-
         this.displayError(e.message);
         console.error(e.message);
       });
 }
 
 login(email: string, password: string ) {
+  this.store.dispatch( new BeginLoadingAction() );
+
   this.afAuth.auth.signInWithEmailAndPassword(email,  password).then(
     r => {
-        // console.log(r);
+          this.store.dispatch( new EndLoadingAction() );
           this.router.navigate(['/']);
     }
   ) .catch(e => {
@@ -59,11 +91,7 @@ logout() {
   this.router.navigate(['/login']);
   }
 
- initAuthListener () {
-    this.afAuth.authState.subscribe( ( fbUser: fireB.User ) => {
-      console.log(fbUser);
-    });
-  }
+ 
 
   isAuth() {
     return this.afAuth.authState
@@ -78,12 +106,18 @@ logout() {
   }
 
 
-  private displayError(e: string ){
+  private displayError(e: string ) {
   Swal.fire({
     title: 'Error!',
     text: e,
     type: 'error',
     confirmButtonText: 'Cool'
   });
+  this.store.dispatch( new EndLoadingAction() );
 }
+
+ngOnDestroy () {
+    this.userSubs.unsubscribe();
+}
+
 }
