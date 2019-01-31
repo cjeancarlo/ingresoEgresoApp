@@ -20,7 +20,7 @@ import { Subscription } from 'rxjs';
 })
 
 export class AuthService implements OnDestroy {
-
+  private actualUser: User;
   private userSubs =  new  Subscription();
 
   constructor(private afAuth: AngularFireAuth,
@@ -37,11 +37,18 @@ export class AuthService implements OnDestroy {
           (data: any) => {
             const newUser = new User (data);
             this.store.dispatch( new SetUserAction( newUser ) );
-            console.log(newUser);
+            this.actualUser = newUser;
+            //  console.log(newUser);
           }
         );
 
+      } else  {
+
+        this.actualUser =  null;
+        this.userSubs.unsubscribe();
+
       }
+
     });
   }
 
@@ -105,7 +112,9 @@ logout() {
     );
   }
 
-
+  getUSer() {
+        return { ...this.actualUser };
+  }
   private displayError(e: string ) {
   Swal.fire({
     title: 'Error!',

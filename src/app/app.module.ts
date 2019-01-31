@@ -12,7 +12,7 @@ import { DetalleComponent } from './ingreso-egreso/detalle/detalle.component';
 import { FootbarComponent } from './shared/footbar/footbar.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { SidebarComponent } from './shared/sidebar/sidebar.component'; 
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // ngrx
 import { StoreModule } from '@ngrx/store';
@@ -24,7 +24,12 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 
+//charts
+import { ChartsModule } from 'ng2-charts';
+
+
 import { environment } from '../environments/environment';
+import { OrdenPipe } from './ingreso-egreso/pipe/orden.pipe';
 
 @NgModule({
   declarations: [
@@ -37,15 +42,18 @@ import { environment } from '../environments/environment';
     DetalleComponent,
     FootbarComponent,
     NavbarComponent,
-    SidebarComponent
+    SidebarComponent,
+    OrdenPipe
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    ChartsModule ,
     StoreModule.forRoot(appReducer),
     StoreDevtoolsModule .instrument({
       maxAge: 25, // Retains last 25 states

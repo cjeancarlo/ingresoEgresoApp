@@ -6,7 +6,7 @@ export interface State  {
 }
 
 const initState: State = {
-    isLoading: false
+    isLoading: true
 };
 
 export function uiReducer  ( state = initState, action: fromIU.Actions  ): State {

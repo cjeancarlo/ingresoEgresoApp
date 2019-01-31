@@ -13,6 +13,14 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() { }
 
+  getUserName(): string {
+    return this.authService.getUSer().nombre;
+  }
+
+  getUserEmail(): string {
+    return this.authService.getUSer().email;
+  }
+
   logout( ) {
       this.authService.logout();
       this.router.navigate(['/login']);
