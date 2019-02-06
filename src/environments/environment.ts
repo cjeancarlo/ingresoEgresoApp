@@ -10,7 +10,10 @@ export const environment = {
     databaseURL: 'https://ingresoegresoapp-68f13.firebaseio.com',
     projectId: 'ingresoegresoapp-68f13',
     storageBucket: 'ingresoegresoapp-68f13.appspot.com',
-    messagingSenderId: '137244750140'
+    messagingSenderId: '137244750140',
+    settings: {
+      timestampsInSnapshots: true
+    }
   }
 };
 

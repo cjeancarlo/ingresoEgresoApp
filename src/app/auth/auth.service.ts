@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
@@ -12,14 +12,15 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { map } from 'rxjs/operators';
 import { User } from './user.model';
-import { SetUserAction } from './auth.actions';
+import { SetUserAction, UnsetUserAction } from './auth.actions';
 import { Subscription } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
 })
 
-export class AuthService implements OnDestroy {
+export class AuthService  {
   private actualUser: User;
   private userSubs =  new  Subscription();
 
@@ -31,6 +32,7 @@ export class AuthService implements OnDestroy {
   }
 
   initAuthListener () {
+    
     this.userSubs = this.afAuth.authState.subscribe( ( fbUser: fireB.User ) => {
       if (fbUser) {
         this.afDB.doc(`${ fbUser.uid }/usuario`).valueChanges().subscribe(
@@ -42,12 +44,12 @@ export class AuthService implements OnDestroy {
           }
         );
 
-      } else  {
+      } /* else  {
 
         this.actualUser =  null;
         this.userSubs.unsubscribe();
 
-      }
+      }*/
 
     });
   }
@@ -94,11 +96,14 @@ login(email: string, password: string ) {
 }
 
 logout() {
+  this.store.dispatch(new UnsetUserAction());
+  this.store.dispatch( new EndLoadingAction());
   this.afAuth.auth.signOut();
+ 
+  this.userSubs.unsubscribe();
   this.router.navigate(['/login']);
   }
 
- 
 
   isAuth() {
     return this.afAuth.authState
@@ -125,8 +130,5 @@ logout() {
   this.store.dispatch( new EndLoadingAction() );
 }
 
-ngOnDestroy () {
-    this.userSubs.unsubscribe();
-}
 
 }

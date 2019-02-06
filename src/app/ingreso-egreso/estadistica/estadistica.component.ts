@@ -1,8 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AppState } from 'src/app/app.reducer';
+
 import { IngresoEgreso } from '../ingreso-egreso.model';
 import { Subscription } from 'rxjs';
+
+import * as fromIngresoEgresoReducer from '../ingreso-egreso.reducers';
+import { BeginLoadingAction, EndLoadingAction } from '../../shared/ui.actions';
+
+
 
 @Component({
   selector: 'app-estadistica',
@@ -23,48 +28,29 @@ export class EstadisticaComponent implements OnInit, OnDestroy {
   doughnutChartLabels: string[] = ['Ingresos', 'Egresos'];
   doughnutChartData: number[];
 
-  ChartColors: Array<any> = [
-    { // grey
-      backgroundColor: 'rgba(148,159,177,0.2)',
-      borderColor: 'rgba(148,159,177,1)',
-      pointBackgroundColor: 'rgba(148,159,177,1)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgba(148,159,177,0.8)'
-    },
-    { // dark grey
-      backgroundColor: 'rgba(77,83,96,0.2)',
-      borderColor: 'rgba(77,83,96,1)',
-      pointBackgroundColor: 'rgba(77,83,96,1)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgba(77,83,96,1)'
-    },
-    { // grey
-      backgroundColor: 'rgba(148,159,177,0.2)',
-      borderColor: 'rgba(148,159,177,1)',
-      pointBackgroundColor: 'rgba(148,159,177,1)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgba(148,159,177,0.8)'
-    }
-  ];
+  chartColors = [{
+      backgroundColor: ['#28A745', '#DC3545']
+    }];
 
-  subs  = new  Subscription;
+     subs:   Subscription  = new  Subscription;
+     subsUi: Subscription  = new  Subscription;
 
-  constructor(private store: Store<AppState>) {
-
+  constructor(private store: Store<fromIngresoEgresoReducer.IngresoEgresoAppState>) {
+        this.store.dispatch(new BeginLoadingAction  ());
    }
 
   ngOnInit() {
 
-    this.subs = this.store.select('ui').subscribe(ui =>  {
+    this.subsUi = this.store.select('ui').subscribe(ui =>  {
       this.cargando = ui.isLoading;
       console.log(this.cargando);
-    } );
+    });
 
-    this.subs = this.store.select('ingresoEgreso').subscribe( items => {
+    this.subs = this.store.select('ingresoEgreso')
+    .subscribe( items => {
+      console.log(items);
           this.calculateIE( items.itemsIngresoEgreso );
+          this.store.dispatch( new EndLoadingAction() );
     });
 
 
@@ -89,6 +75,8 @@ export class EstadisticaComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.subs.unsubscribe();
-      }
+    this.subsUi.unsubscribe();
+  }
 
 }
+

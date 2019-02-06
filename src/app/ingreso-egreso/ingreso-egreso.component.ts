@@ -18,6 +18,7 @@ export class IngresoEgresoComponent implements OnInit {
   forma: FormGroup;
   tipo = 'ingreso';
   cargando: boolean;
+  
   private subs: Subscription = new Subscription;
 
   constructor( private ingresoEgresoService: IngresoEgresoService,

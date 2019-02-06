@@ -1,17 +1,19 @@
 import * as fromItems from './ingreso-egreso.actions';
 import { IngresoEgreso } from './ingreso-egreso.model';
-
-
+import { AppState } from '../app.reducer';
 
 export interface State  {
     itemsIngresoEgreso: IngresoEgreso[];
+}
+export interface IngresoEgresoAppState extends AppState {
+    IngresoEgreso: State;
 }
 
 const initState: State = {
     itemsIngresoEgreso: []
 };
 
-export function uiReducer  ( state = initState, action: fromItems.Actions  ): State {
+export function IngresoEgresoReducer  ( state = initState, action: fromItems.Actions  ): State {
 
     switch ( action.type )  {
 
@@ -19,11 +21,11 @@ export function uiReducer  ( state = initState, action: fromItems.Actions  ): St
             return {
                 itemsIngresoEgreso: [
                              ...action.item
-                             // .map( i =>  {
-                            //     return {
-                            //         ...i
-                            //     };
-                            // })
+                              .map( i =>  {
+                                 return {
+                                     ...i
+                                 };
+                             })
                 ]
             };
 

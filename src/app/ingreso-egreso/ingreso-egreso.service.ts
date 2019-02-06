@@ -8,7 +8,7 @@ import { AppState } from '../app.reducer';
 import { filter, map } from 'rxjs/operators';
 import { SetItemsAction } from './ingreso-egreso.actions';
 import { Subscription } from 'rxjs';
-import { BeginLoadingAction, EndLoadingAction } from '../shared/ui.actions';
+
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +18,9 @@ export class IngresoEgresoService  {
   private subInitIngresoEgresoListener: Subscription = new Subscription;
   private subIngresoEgresoItem: Subscription = new Subscription;
 
-  constructor( private afDb: AngularFirestore , private authService: AuthService, private store:Store<AppState> ) { }
+  constructor( private afDb: AngularFirestore,
+               private authService: AuthService,
+               private store:Store<AppState> ) { }
 
 
   createIngresoEgreso(ingresoEgreso: IngresoEgreso): Promise<any> {
@@ -41,18 +43,17 @@ export class IngresoEgresoService  {
       .subscribe(userAuth => {
         this.IngresoEgresoItem(userAuth.user.uid);
       });
-
   }
 
 private IngresoEgresoItem( uid: string) {
+  console.log('IngresoEgresoItem');
  const path = (`${ uid }/ingresos-egresos/items/`);
 
- this.store.dispatch(new BeginLoadingAction());
- 
  this.subInitIngresoEgresoListener =  this.afDb.collection(path)
     .snapshotChanges()
     .pipe(
       map( (docData: Array<DocumentChangeAction<{}>>) => {
+            console.log(docData);
             return  docData.map( d => {
               return {
                     uid:  d.payload.doc.id,
@@ -63,15 +64,14 @@ private IngresoEgresoItem( uid: string) {
       )
     ).subscribe( (data: any[]) => {
       this.store.dispatch(new SetItemsAction(data));
-      this.store.dispatch(
-        new EndLoadingAction()
-      );
+  
+      console.log('this.store.dispatch( new EndLoadingAction() )');
   });
   }
 
   cancelSubcription(): void {
-    this.subInitIngresoEgresoListener.unsubscribe();
-    this.subIngresoEgresoItem.unsubscribe();
+    /*this.subInitIngresoEgresoListener.unsubscribe();
+    this.subIngresoEgresoItem.unsubscribe();*/
   }
 
 }
